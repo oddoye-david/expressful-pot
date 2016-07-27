@@ -24,7 +24,7 @@ function show(req, res, next) {
 }
 
 function edit(req, res, next) {
-  if(req.params.id != res.locals.id){
+  if(req.params.id != req.locals.id){
     return next(new HttpError(401));
   }
 
@@ -60,7 +60,7 @@ function edit(req, res, next) {
 }
 
 function destroy(req, res, next) {
-  if(req.params.id != res.locals.id && !isAdmin()){
+  if(req.params.id != req.locals.id && !isAdmin()){
     return next(new HttpError(401));
   }
 
@@ -95,12 +95,12 @@ function saveUser(user, res){
   return res.json({token: jwt.signToken(user.id, user.role)});
 }
 
-function isAdmin(){
-  return res.locals.role == 'admin';
+function isAdmin(req){
+  return req.locals.role == 'admin';
 }
 
-function getRefreshedToken(){
-  return res.locals.token;
+function getRefreshedToken(req){
+  return req.locals.token;
 }
 
 export default {
