@@ -53,9 +53,9 @@ function recovery(req, res, next) {
       if(!user){
         return next(new HttpError(409, 'No account with that email address exists.'));
       }
-      
+
       user.passwordResetToken = token;
-      user.passwordResetExpires = Date.now() + config.passwordResetExpires;
+      user.passwordResetExpires = Date.now() + config.app.passwordResetExpires;
 
       user.save()
         .then(user => {
@@ -93,6 +93,10 @@ function recovery(req, res, next) {
 }
 
 function reset(req, res, next) {
+  if(!req.body.password){
+    return next(new HttpError(500, 'Please provide a new password.'));
+  }
+
   User.findOne({
     passwordResetToken: req.params.token,
     passwordResetExpires: { $gt: new Date }

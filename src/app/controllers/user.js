@@ -3,19 +3,19 @@ import User from '../models/user';
 import jwt from '../utils/jwt';
 
 function index(req, res, next) {
-  if(!isAdmin()){
+  if(!isAdmin(req)){
     return next(new HttpError(401));
   }
 
   User.find({}).then(users => {
-    const {token} = getRefreshedToken();
+    const {token} = getRefreshedToken(req);
     return res.json({users, token});
   });
 }
 
 function show(req, res, next) {
   User.findById(req.params.id).then(user => {
-    const {token} = getRefreshedToken();
+    const {token} = getRefreshedToken(req);
 
     if (!user) return next(new HttpError(400, `There are no user with that criteria.`));
 
@@ -24,11 +24,11 @@ function show(req, res, next) {
 }
 
 function edit(req, res, next) {
-  if(req.params.id != req.locals.id){
+  if(req.params.id != req.app.locals.id){
     return next(new HttpError(401));
   }
 
-  const {token} = getRefreshedToken();
+  const {token} = getRefreshedToken(req);
 
   User.findById(req.params.id).then(user => {
     const {email, password, newPassword} = req.body;
@@ -60,14 +60,14 @@ function edit(req, res, next) {
 }
 
 function destroy(req, res, next) {
-  if(req.params.id != req.locals.id && !isAdmin()){
+  if(req.params.id != req.app.locals.id && !isAdmin(req)){
     return next(new HttpError(401));
   }
 
   const password = req.body.password;
 
-  if(isAdmin()){
-    const {token} = getRefreshedToken();
+  if(isAdmin(req)){
+    const {token} = getRefreshedToken(req);
 
     User.findByIdAndRemove(req.params.id)
       .then(() => {
@@ -96,11 +96,11 @@ function saveUser(user, res){
 }
 
 function isAdmin(req){
-  return req.locals.role == 'admin';
+  return req.app.locals.role == 'admin';
 }
 
 function getRefreshedToken(req){
-  return req.locals.token;
+  return req.app.locals.token;
 }
 
 export default {
