@@ -6,8 +6,8 @@ function index(req, res, next) {
   if(!isAdmin(req)){
     return next(new HttpError(401));
   }
-
-  User.find({}).then(users => {
+  
+  User.find({}).limit(parseInt(req.query.limit)).skip(parseInt(req.query.page - 1)).then(users => {
     const {token} = getRefreshedToken(req);
     return res.json({users, token});
   });
